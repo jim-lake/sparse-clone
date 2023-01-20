@@ -1,0 +1,13 @@
+{
+  "name": "sparse-clone",
+  "private": true,
+  "version": "0.0.1",
+  "license": "UNLICENSED",
+  "scripts": {
+    "lint": "eslint src --ext js",
+    "pretty": "prettier \"src/**/*.js\" --write"
+  },
+  "dependencies": {
+    "yargs": "17.6.2"
+  }
+}
