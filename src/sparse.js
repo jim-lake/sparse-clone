@@ -49,7 +49,6 @@ async function createFile(dest_path, size, force) {
   try {
     await handle.write(buffer, 0, 1, size - 1);
     await handle.close();
-    console.log('file created');
     return 0;
   } catch (e) {
     console.error('error: failed to write to file:', e);
