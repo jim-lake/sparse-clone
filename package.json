@@ -2,10 +2,15 @@
   "name": "sparse-clone",
   "private": true,
   "version": "0.0.1",
-  "license": "UNLICENSED",
+  "license": "MIT",
   "scripts": {
     "lint": "eslint src --ext js",
     "pretty": "prettier \"src/**/*.js\" --write"
+  },
+  "bin": {
+    "clonify": "src/clonify.js",
+    "sparsify": "src/sparsify.js",
+    "mksparse": "src/sparse.js"
   },
   "dependencies": {
     "yargs": "17.6.2"
