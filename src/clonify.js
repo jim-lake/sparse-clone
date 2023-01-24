@@ -13,7 +13,12 @@ yargs.scriptName('clonify');
 yargs.usage('$0 <file1> <file2> ... [args]');
 yargs.option('verbose', {
   alias: 'v',
-  describe: 'verbose',
+  describe: 'Verbose console output',
+  type: 'boolean',
+});
+yargs.option('dryrun', {
+  alias: 'n',
+  describe: 'Compare files but dont run clones',
   type: 'boolean',
 });
 yargs.demandCommand(
@@ -25,7 +30,7 @@ yargs.demandCommand(
 yargs.help();
 
 const { argv } = yargs;
-const { verbose } = argv;
+const { dryrun, verbose } = argv;
 const block_size = argv.block_size ? parseInt(argv.block_size) : 16 * 1024;
 const min_match = argv.min_match ? parseInt(argv.min_match) : 10;
 
@@ -117,23 +122,28 @@ async function _run() {
   }
   let match;
   while ((match = _findBestMatch())) {
-    const { file, other, match_list, match_length } = match;
+    const { file1, file2, match_list, match_length } = match;
+    const parent = file2.is_done ? file2 : file1;
+    const child = parent === file1 ? file2 : file1;
     const match_bytes = match_length * block_size;
+    const max_size = Math.max(parent.size, child.size);
     console.log(
       'cloning:',
-      file.path,
+      parent.path,
       '=>',
-      other.path,
-      'match %:',
-      ((match_bytes / other.size) * 100).toFixed(4) + '%'
+      child.path,
+      'match:',
+      ((match_bytes / max_size) * 100).toFixed(4) + '%'
     );
-    const err = await _clonifyFile(file.path, other.path, match_list);
-    if (err) {
-      console.error('error: clone failed with err:', err);
-      process.exit(-3);
+    if (!dryrun) {
+      const err = await _clonifyFile(parent.path, child.path, match_list);
+      if (err) {
+        console.error('error: clone failed with err:', err);
+        process.exit(-3);
+      }
     }
-    match.file.is_done = true;
-    match.other.is_done = true;
+    parent.is_done = true;
+    child.is_done = true;
   }
   process.exit(0);
 }
@@ -156,19 +166,19 @@ function _findBestMatch() {
   let ret;
   const matches = [];
   for (let i = 0; i < file_list.length - 1; i++) {
-    const file = file_list[i];
+    const file1 = file_list[i];
     for (let j = i + 1; j < file_list.length; j++) {
-      const other = file_list[j];
-      if (!file.is_done || !other.is_done) {
-        const match_list = file.match_list[j];
+      const file2 = file_list[j];
+      if (!file1.is_done || !file2.is_done) {
+        const match_list = file1.match_list[j];
         const match_length = match_list.length;
         if (match_length >= min_match) {
-          const both_not_done = !file.is_done && !other.is_done;
+          const both_not_done = !file1.is_done && !file2.is_done;
           matches.push({
             match_length,
             both_not_done,
-            file,
-            other,
+            file1,
+            file2,
             match_list,
           });
         }
