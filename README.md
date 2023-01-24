@@ -20,7 +20,7 @@ Takes a file and turns it into the sparse version of itself.
 the tool is working as advertised.
 
 Note: The sparse block size on APFS is 16KB, so if your file doesn't have at
-least an (aligned!) 0's segment of at least 16KB no savings will be made.
+least an (aligned!) 0's segment of at least 16KB to save space.
 APFS also has a minimum of 2000 blocks (32MB) for a sparse file, so operations
 on files smaller than that will not result in any savings.
 
