@@ -33,16 +33,40 @@ async function _run() {
     const buffer = Buffer.alloc(block_size, 0);
     const read_handle = await fs.open(src_path, 'r');
     const write_handle = await fs.open(dest_path, 'r+');
+    let block_count = 0;
+    let copy_count = 0;
+    let total_bytes = 0;
+    let copy_bytes = 0;
+
     for (let i = 0; i < size; i += block_size) {
       const read_size = Math.min(size - i, block_size);
+      block_count++;
+      total_bytes += read_size;
       await read_handle.read(buffer, 0, read_size, i);
       if (!_isEmpty(buffer, read_size)) {
+        copy_count++;
+        copy_bytes += read_size;
         await write_handle.write(buffer, 0, read_size, i);
       }
     }
     await read_handle.close();
     await write_handle.close();
-    console.log('done!');
+    console.log(
+      'blocks:',
+      block_count,
+      'copied blocks:',
+      copy_count,
+      'empty blocks:',
+      block_count - copy_count
+    );
+    console.log(
+      'bytes:',
+      total_bytes,
+      'copied bytes:',
+      copy_bytes,
+      'empty bytes:',
+      total_bytes - copy_bytes
+    );
   } catch (e) {
     console.error('error: threw:', e);
   }
